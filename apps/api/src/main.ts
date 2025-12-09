@@ -1,0 +1,13 @@
+// apps/api/src/main.ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module.js';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'node:path';
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors({ origin: '*', credentials: true });
+  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+  await app.listen(8080, '0.0.0.0');
+}
+bootstrap();

@@ -1,0 +1,145 @@
+name: rollator
+
+services:
+  # ──────────────── DATABASE ────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: rollator-db
+    environment:
+      POSTGRES_DB: rollator
+      POSTGRES_USER: rollator
+      POSTGRES_PASSWORD: rollatorpw
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rollator -d rollator"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ──────────────── CACHE ────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rollator-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+
+  # ──────────────── OBJECT STORAGE (MinIO) ────────────────
+  minio:
+    image: minio/minio
+    container_name: rollator-minio
+    command: server /data --console-address ":9002"
+    environment:
+      MINIO_ROOT_USER: rollator
+      MINIO_ROOT_PASSWORD: rollatorsecret
+      MINIO_ACCESS_KEY: rollator
+      MINIO_SECRET_KEY: rollatorsecret
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9001:9000"  # S3 API
+      - "9002:9002"  # MinIO Console
+
+  # Automatically create an “assets” bucket once MinIO is up
+  minio-setup:
+    image: minio/mc
+    container_name: rollator-minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 rollator rollatorsecret &&
+      mc mb -p local/assets || true &&
+      mc anonymous set download local/assets || true &&
+      sleep 2
+      "
+    restart: "no"
+
+  # ──────────────── MAIL TESTER ────────────────
+  mailhog:
+    image: mailhog/mailhog
+    container_name: rollator-mailhog
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+
+  # ──────────────── ADMINER (DB UI) ────────────────
+  adminer:
+    image: adminer
+    container_name: rollator-adminer
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+
+  # ──────────────── BACKEND (NestJS API) ────────────────
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: rollator-api
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      minio-setup:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://rollator:rollatorpw@db:5432/rollator
+      REDIS_URL: redis://redis:6379
+
+      # local upload handling (no need for S3 for now)
+      STORAGE_DRIVER: local
+      STORAGE_S3_ENDPOINT: http://minio:9000
+      STORAGE_S3_BUCKET: assets
+      STORAGE_S3_ACCESS_KEY: rollator
+      STORAGE_S3_SECRET_KEY: rollatorsecret
+
+      JWT_SECRET: changeme
+      APP_URL: http://localhost:3002
+    ports:
+      - "8085:8080"     # host:container mapping (API available at localhost:8085)
+    command: ["npm", "run", "start:dev"]
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+      - uploads_data:/app/uploads   # persistent local uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # ──────────────── FRONTEND (Next.js) ────────────────
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: rollator-web
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # Used by Next.js API proxy to reach backend (server-to-server only)
+      SERVER_API_URL: http://api:8080
+      INTERNAL_WEB_BASE_URL: http://localhost:3000
+    ports:
+      - "3002:3000"
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+
+# ──────────────── NAMED VOLUMES ────────────────
+volumes:
+  db_data: {}
+  redis_data: {}
+  minio_data: {}
+  uploads_data: {}  # stores uploaded images persistently

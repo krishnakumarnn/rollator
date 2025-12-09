@@ -1,0 +1,292 @@
+/* apps/web/app/rollator/roadmap.module.css */
+
+/* Page & hero */
+.page { color: #0b1020; }
+
+.hero { position: relative; overflow: hidden; padding: 64px 0 24px; }
+.heroBg {
+  position: absolute; inset: 0;
+  background: radial-gradient(1200px 480px at 60% -140px, #e9f2ff, transparent);
+  pointer-events: none;
+}
+.heroInner { max-width: 1100px; margin: 0 auto; padding: 0 18px; }
+.eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: .78rem; color: #2f7cff; margin-bottom: 8px; }
+.title { font-size: clamp(2.1rem, 4.6vw, 3.2rem); line-height: 1.06; margin: 0 0 10px; }
+.grad { background: linear-gradient(90deg, #2f7cff, #34e6c2 60%); -webkit-background-clip: text; color: transparent; }
+.lead { font-size: 1.05rem; color: #5f6b7a; max-width: 70ch; }
+
+.pills { display:flex; flex-wrap:wrap; gap:8px; margin-top: 14px; }
+.pill { background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:999px; padding:6px 10px; font-size:.86rem; }
+
+.ctaRow { display:flex; gap:12px; margin: 16px 0 6px; flex-wrap:wrap; }
+.btn { height: 40px; padding: 0 16px; border-radius: 999px; display:inline-flex; align-items:center; justify-content:center; font-weight:600; border:1px solid transparent; }
+.primary { background:#0b1020; color:#fff; box-shadow: 0 12px 24px rgba(0,0,0,.12); }
+.ghost { background:#fff; border-color: rgba(0,0,0,.12); }
+
+.path { width: 100%; height: 160px; opacity: .7; }
+.pathStroke { stroke-dasharray: 680; stroke-dashoffset: 680; animation: draw 3.6s ease forwards; }
+.pathDot { fill: #2f7cff; animation: blink 1.4s ease-in-out .8s infinite; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes blink { 0%,100%{opacity:.35; transform:scale(.9)} 50%{opacity:1; transform:scale(1.08)} }
+
+/* Roadmap timeline */
+.roadmap { max-width: 1100px; margin: 20px auto 0; padding: 0 18px; }
+.roadmapHead { margin-bottom: 12px; }
+.roadmapHead h2 { margin: 0 0 6px; font-size: 1.6rem; }
+.roadmapHead p { margin: 0; color: #5f6b7a; }
+
+.timelineWrap { position: relative; margin-top: 18px; }
+.timeline {
+  position: absolute; left: 22px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(#dbe7ff, #eafaf4);
+  border-radius: 2px;
+}
+.list { list-style: none; margin: 0; padding: 0 0 0 0; display: grid; gap: 14px; }
+.step { display: grid; grid-template-columns: 44px 40px 1fr; gap: 12px; align-items: start; background:#fff; border:1px solid rgba(0,0,0,.06); border-radius: 14px; padding: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.06); }
+.badge { width: 28px; height: 28px; border-radius: 50%; display:grid; place-items:center; font-weight: 800; color:#2f7cff; background: #f2f7ff; border:1px solid #e1ecff; }
+.icon { color:#2f7cff; display:grid; place-items:center; }
+
+.body { min-height: 28px; }
+.stepTop { display:flex; align-items:center; gap:8px; }
+.step h3 { margin: 0; font-size: 1.02rem; }
+.tag { font-size:.78rem; color:#0b1020; background:#f7fdfb; border:1px solid #d6f4ea; padding: 4px 8px; border-radius: 999px; }
+.step p { margin: 6px 0 0; color:#465060; }
+
+.pulse { width: 100%; height: 34px; margin-top: 10px; color:#2f7cff; }
+.pulseLine { stroke-dasharray: 240; stroke-dashoffset: 240; animation: dash 2.8s ease-in-out infinite; }
+@keyframes dash { 0%{stroke-dashoffset: 240} 50%{stroke-dashoffset: 0} 100%{stroke-dashoffset: -240} }
+
+.roadmapFoot { display:flex; gap:12px; margin: 18px 0 0; }
+
+/* Tail CTA */
+.tail { margin-top: 28px; background:#0b1020; color:#d9e6ff; text-align:center; padding: 28px 18px; }
+.tail h2 { margin: 0 0 6px; }
+.tailLead { margin: 0 0 10px; color: #c3d4ff; }
+
+/* Mobile */
+@media (max-width: 760px){
+  .timeline { display: none; }
+  .step { grid-template-columns: 32px 28px 1fr; }
+}
+/* === FULL-BLEED VIDEO === */
+.videoSection {
+  position: relative;
+  width: 100%;
+  margin: 32px 0 12px;
+  background: #000;
+}
+
+/* text overlay above the video */
+.videoCopy {
+  text-align: center;
+  padding: 18px 16px 10px;
+  color: #0b1020;
+}
+.videoCopy h2 {
+  margin: 0 0 6px;
+  font-size: clamp(1.4rem, 2.7vw, 2rem);
+  font-weight: 800;
+}
+.videoCopy p {
+  margin: 0 auto;
+  max-width: 900px;
+  color: #52618b;
+  font-size: 0.98rem;
+}
+
+/* outer wrapper that preserves 16:9 and shows the poster as a background image too */
+.videoShell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000 center/cover no-repeat; /* uses inline style BG poster */
+  overflow: hidden;
+  border-radius: 0;
+}
+
+/* the actual <video> covers the frame */
+.videoTag {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: transparent;
+  border: 0;
+}
+
+/* subtle readability scrims */
+.scrimTop,
+.scrimBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 90px;
+  pointer-events: none;
+}
+.scrimTop {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0));
+}
+.scrimBottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.35), rgba(0,0,0,0));
+}
+
+/* remove stray margins if your global CSS adds them */
+.videoSection video { margin: 0; }
+/* === GENERAL LAYOUT === */
+.page {
+  background: #ffffff;
+  color: #0b1020;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* === HERO === */
+.hero {
+  padding: 120px 20px 80px;
+  text-align: center;
+  background: linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
+}
+.heroInner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.85rem;
+  color: #0072ff;
+  margin-bottom: 12px;
+}
+.title {
+  font-size: clamp(2.1rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 16px;
+}
+.grad {
+  background: linear-gradient(90deg, #0099ff 0%, #00d4c3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.lead {
+  font-size: 1.1rem;
+  color: #5a6370;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.ctaRow {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+.primary {
+  background: linear-gradient(90deg, #0072ff, #00d4c3);
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(0, 114, 255, 0.25);
+}
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 114, 255, 0.3);
+}
+.ghost {
+  border: 2px solid #0072ff;
+  color: #0072ff;
+  background: transparent;
+}
+.ghost:hover {
+  background: #0072ff;
+  color: #fff;
+}
+
+/* === FEATURE VIDEO === */
+.videoSection {
+  width: 100%;
+  background: #000;
+  margin: 0;
+  padding: 0 0 60px;
+  text-align: center;
+}
+
+.videoCopy {
+  text-align: center;
+  padding: 60px 20px 20px;
+}
+.videoCopy h2 {
+  color: #111;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+.videoCopy p {
+  color: #4c5563;
+  font-size: 1.05rem;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Full-bleed, responsive video shell */
+.videoShell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000 center/cover no-repeat;
+  overflow: hidden;
+}
+.videoTag {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  background: transparent;
+}
+
+/* gradient overlays */
+.scrimTop,
+.scrimBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 100px;
+  pointer-events: none;
+}
+.scrimTop {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent);
+}
+.scrimBottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent);
+}
+
+/* === CTA FOOTER === */
+.tail {
+  text-align: center;
+  padding: 100px 20px 120px;
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+}
+.tail h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.tailLead {
+  color: #5a6370;
+  max-width: 700px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}

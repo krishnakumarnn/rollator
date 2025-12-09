@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  isActive Boolean   @default(true)
+  products Product[]
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  description    String?
+  specifications Json?
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  variants       ProductVariant[]
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+
+  // NEW: back relation to OrderItem.product
+  orderItems OrderItem[] @relation("Product_OrderItems")
+}
+
+model ProductVariant {
+  id         String  @id @default(cuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  sku        String  @unique
+  priceCents Int
+  currency   String  @default("USD")
+  stock      Int     @default(10)
+  attributes Json?
+
+  // NEW: back relation to OrderItem.variant
+  orderItems OrderItem[] @relation("Variant_OrderItems")
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  fileName  String
+  mimeType  String  @default("image/jpeg")
+  data      Bytes
+  alt       String?
+  pos       Int     @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ExperienceMedia {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  fileName  String
+  mimeType  String   @default("image/jpeg")
+  data      Bytes
+  alt       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  addresses    Address[]
+  orders       Order[]
+  isAdmin      Boolean   @default(false)
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String? // "Home", "Office"
+  fullName   String
+  line1      String
+  line2      String?
+  city       String
+  region     String?
+  postalCode String
+  country    String
+  phone      String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id])
+  guestKey   String? // for guest checkout linkage
+  email      String
+  status     OrderStatus @default(PENDING)
+  totalCents Int
+  currency   String      @default("USD")
+  shipping   Json? // snapshot of shipping address
+  billing    Json? // snapshot of billing address
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  items      OrderItem[]
+  paymentRef String? // e.g. provider transaction id
+  notes      String?
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  productId String
+  product   Product @relation("Product_OrderItems", fields: [productId], references: [id])
+
+  productVariantId String
+  variant          ProductVariant @relation("Variant_OrderItems", fields: [productVariantId], references: [id])
+
+  nameSnapshot String
+  sku          String
+  priceCents   Int
+  quantity     Int
+  imageData    Bytes?
+  imageMime    String?
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
