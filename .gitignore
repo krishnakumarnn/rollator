@@ -5,3 +5,10 @@ node_modules
 npm-debug.log*
 yarn-error.log*
 ubuntu@*
+
+# Next.js build output
+apps/web/.next/
+apps/web/out/
+apps/web/node_modules/
+apps/api/node_modules/
+apps/api/dist/
