@@ -1,0 +1,63 @@
+name: rollator-api-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rollator-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rollator
+      POSTGRES_USER: rollator
+      POSTGRES_PASSWORD: rollatorpw
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rollator -d rollator"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: "512m"
+
+  redis:
+    image: redis:7-alpine
+    container_name: rollator-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    mem_limit: "256m"
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: rollator-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      APP_URL: http://localhost:8085
+      DATABASE_URL: postgres://rollator:rollatorpw@db:5432/rollator
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: changeme
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "8085:8080"
+    restart: unless-stopped
+    mem_limit: "512m"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "require('http').get('http://127.0.0.1:8080/health', r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  db_data: {}
+  redis_data: {}
+  uploads_data: {}
